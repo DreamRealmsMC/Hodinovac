@@ -10,6 +10,7 @@ import me.itzstanleex.hodinovac.config.ConfigManager;
 import me.itzstanleex.hodinovac.database.MySQLDatabase;
 import me.itzstanleex.hodinovac.placeholder.PlaceholderHook;
 import me.itzstanleex.hodinovac.util.Debugger;
+import me.itzstanleex.hodinovac.util.MessageManager;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -50,6 +51,9 @@ public final class Hodinovac extends JavaPlugin {
     private Debugger debugger;
 
     @Getter
+    private MessageManager messageManager;
+
+    @Getter
     private ExecutorService executorService;
 
     private PlaceholderHook placeholderHook;
@@ -80,6 +84,9 @@ public final class Hodinovac extends JavaPlugin {
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
+
+        // Initialize message manager after config is loaded
+        this.messageManager = new MessageManager(this);
 
         // Initialize database connection
         this.database = new MySQLDatabase(this);
@@ -199,6 +206,11 @@ public final class Hodinovac extends JavaPlugin {
             // Reload configuration
             if (!configManager.reloadConfig()) {
                 return false;
+            }
+
+            // Reload messages after config reload
+            if (messageManager != null) {
+                messageManager.loadMessages();
             }
 
             // Refresh components that depend on config

@@ -2,9 +2,8 @@ package me.itzstanleex.hodinovac.commands;
 
 import me.itzstanleex.hodinovac.Hodinovac;
 import me.itzstanleex.hodinovac.api.HodinovacAPI;
+import me.itzstanleex.hodinovac.util.MessageManager;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -31,6 +30,8 @@ import java.util.regex.Pattern;
  *
  * Time format examples: 1d, 2h, 30m, 45s, 1h30m, 2d5h30m
  *
+ * All messages are now configurable through config.yml and support MiniMessage formatting.
+ *
  * @author ItzStanleyX
  * @version 1.0.0
  * @since 1.0.0
@@ -39,6 +40,7 @@ public class PlaytimeCommand {
 
     private final Hodinovac plugin;
     private final HodinovacAPI api;
+    private final MessageManager messageManager;
     private final CommandManager<CommandSender> commandManager;
 
     // Pattern for parsing time strings like "1d2h30m45s"
@@ -61,6 +63,7 @@ public class PlaytimeCommand {
     public PlaytimeCommand(Hodinovac plugin) {
         this.plugin = plugin;
         this.api = Hodinovac.getApi();
+        this.messageManager = plugin.getMessageManager();
 
         try {
             this.commandManager = createCommandManager();
@@ -140,15 +143,15 @@ public class PlaytimeCommand {
      * Handles the reload command
      */
     private void handleReload(CommandSender sender) {
-        sender.sendMessage(Component.text("Reloading Hodinovac configuration...", NamedTextColor.YELLOW));
+        messageManager.sendMessage(sender, "reload.reloading");
 
         boolean success = plugin.reloadPlugin();
 
         if (success) {
-            sender.sendMessage(Component.text("✓ Configuration reloaded successfully!", NamedTextColor.GREEN));
+            messageManager.sendMessage(sender, "reload.success");
             plugin.getDebugger().log("Configuration reloaded by " + sender.getName());
         } else {
-            sender.sendMessage(Component.text("✗ Failed to reload configuration. Check console for errors.", NamedTextColor.RED));
+            messageManager.sendMessage(sender, "reload.failed");
         }
     }
 
@@ -159,7 +162,7 @@ public class PlaytimeCommand {
         // Parse time
         long seconds = parseTimeString(timeString);
         if (seconds <= 0) {
-            sender.sendMessage(Component.text("✗ Invalid time format. Use formats like: 1d, 2h, 30m, 1h30m", NamedTextColor.RED));
+            messageManager.sendMessage(sender, "errors.invalid_time");
             return;
         }
 
@@ -173,7 +176,8 @@ public class PlaytimeCommand {
             return target;
         }).thenAccept(target -> {
             if (target == null || !target.hasPlayedBefore()) {
-                sender.sendMessage(Component.text("✗ Player '" + playerName + "' not found.", NamedTextColor.RED));
+                messageManager.sendMessage(sender, "errors.player_not_found",
+                        MessageManager.placeholders("player", playerName));
                 return;
             }
 
@@ -181,10 +185,14 @@ public class PlaytimeCommand {
 
             if (success) {
                 String formattedTime = formatDuration(seconds);
-                sender.sendMessage(Component.text("✓ Added " + formattedTime + " to " + target.getName() + "'s playtime.", NamedTextColor.GREEN));
+                messageManager.sendMessage(sender, "playtime.added",
+                        MessageManager.placeholders(
+                                "time", formattedTime,
+                                "player", target.getName() != null ? target.getName() : playerName
+                        ));
                 plugin.getDebugger().log(sender.getName() + " added " + seconds + " seconds to " + target.getName());
             } else {
-                sender.sendMessage(Component.text("✗ Failed to add playtime. Player may not be tracked.", NamedTextColor.RED));
+                messageManager.sendMessage(sender, "errors.operation_failed");
             }
         });
     }
@@ -196,7 +204,7 @@ public class PlaytimeCommand {
         // Parse time
         long seconds = parseTimeString(timeString);
         if (seconds <= 0) {
-            sender.sendMessage(Component.text("✗ Invalid time format. Use formats like: 1d, 2h, 30m, 1h30m", NamedTextColor.RED));
+            messageManager.sendMessage(sender, "errors.invalid_time");
             return;
         }
 
@@ -209,7 +217,8 @@ public class PlaytimeCommand {
             return target;
         }).thenAccept(target -> {
             if (target == null || !target.hasPlayedBefore()) {
-                sender.sendMessage(Component.text("✗ Player '" + playerName + "' not found.", NamedTextColor.RED));
+                messageManager.sendMessage(sender, "errors.player_not_found",
+                        MessageManager.placeholders("player", playerName));
                 return;
             }
 
@@ -217,10 +226,14 @@ public class PlaytimeCommand {
 
             if (success) {
                 String formattedTime = formatDuration(seconds);
-                sender.sendMessage(Component.text("✓ Removed " + formattedTime + " from " + target.getName() + "'s playtime.", NamedTextColor.GREEN));
+                messageManager.sendMessage(sender, "playtime.removed",
+                        MessageManager.placeholders(
+                                "time", formattedTime,
+                                "player", target.getName() != null ? target.getName() : playerName
+                        ));
                 plugin.getDebugger().log(sender.getName() + " removed " + seconds + " seconds from " + target.getName());
             } else {
-                sender.sendMessage(Component.text("✗ Failed to remove playtime. Player may not be tracked.", NamedTextColor.RED));
+                messageManager.sendMessage(sender, "errors.operation_failed");
             }
         });
     }
@@ -236,7 +249,7 @@ public class PlaytimeCommand {
         if (playerName == null) {
             // Check self
             if (!(sender instanceof Player)) {
-                sender.sendMessage(Component.text("✗ Console must specify a player name.", NamedTextColor.RED));
+                messageManager.sendMessage(sender, "errors.console_player_required");
                 return;
             }
 
@@ -244,13 +257,13 @@ public class PlaytimeCommand {
             checkingSelf = true;
 
             if (!sender.hasPermission(PERMISSION_CHECK_SELF)) {
-                sender.sendMessage(Component.text("✗ You don't have permission to check your own playtime.", NamedTextColor.RED));
+                messageManager.sendMessage(sender, "errors.no_permission");
                 return;
             }
         } else {
             // Check other player
             if (!sender.hasPermission(PERMISSION_CHECK_OTHERS)) {
-                sender.sendMessage(Component.text("✗ You don't have permission to check other players' playtime.", NamedTextColor.RED));
+                messageManager.sendMessage(sender, "errors.no_permission");
                 return;
             }
 
@@ -260,7 +273,8 @@ public class PlaytimeCommand {
             }
 
             if (target == null || !target.hasPlayedBefore()) {
-                sender.sendMessage(Component.text("✗ Player '" + playerName + "' not found.", NamedTextColor.RED));
+                messageManager.sendMessage(sender, "errors.player_not_found",
+                        MessageManager.placeholders("player", playerName));
                 return;
             }
         }
@@ -274,14 +288,17 @@ public class PlaytimeCommand {
             String targetName = finalTarget.getName() != null ? finalTarget.getName() : "Unknown";
             String formattedTime = api.getFormattedPlaytime(finalTarget.getUniqueId(), true);
 
-            Component message = Component.text()
-                    .append(Component.text("⏰ ", NamedTextColor.GOLD))
-                    .append(Component.text(finalCheckingSelf ? "Your" : targetName + "'s", NamedTextColor.YELLOW, TextDecoration.BOLD))
-                    .append(Component.text(" playtime: ", NamedTextColor.GRAY))
-                    .append(Component.text(formattedTime, NamedTextColor.GREEN, TextDecoration.BOLD))
-                    .build();
-
-            sender.sendMessage(message);
+            // Send main playtime message
+            if (finalCheckingSelf) {
+                messageManager.sendMessageNoPrefix(sender, "playtime.own",
+                        MessageManager.placeholders("playtime", formattedTime));
+            } else {
+                messageManager.sendMessageNoPrefix(sender, "playtime.other",
+                        MessageManager.placeholders(
+                                "player", targetName,
+                                "playtime", formattedTime
+                        ));
+            }
 
             // Show session playtime for online players
             if (finalTarget.isOnline() && api.isPlayerTracked(finalTarget.getUniqueId())) {
@@ -289,15 +306,19 @@ public class PlaytimeCommand {
                 String sessionFormatted = formatDuration(sessionSeconds);
                 boolean isAfk = api.isAfk(finalTarget.getUniqueId());
 
-                Component sessionMessage = Component.text()
-                        .append(Component.text("📊 ", NamedTextColor.BLUE))
-                        .append(Component.text("Session: ", NamedTextColor.GRAY))
-                        .append(Component.text(sessionFormatted, NamedTextColor.AQUA))
-                        .append(Component.text(" | Status: ", NamedTextColor.GRAY))
-                        .append(Component.text(isAfk ? "AFK" : "Active", isAfk ? NamedTextColor.RED : NamedTextColor.GREEN))
-                        .build();
+                String afkStatus = isAfk ?
+                        plugin.getConfigManager().getAfkFormatAfk() :
+                        plugin.getConfigManager().getAfkFormatNotAfk();
 
-                sender.sendMessage(sessionMessage);
+                if (afkStatus.isEmpty()) {
+                    afkStatus = isAfk ? "AFK" : "Active";
+                }
+
+                messageManager.sendMessageNoPrefix(sender, "playtime.session",
+                        MessageManager.placeholders(
+                                "session", sessionFormatted,
+                                "status", afkStatus
+                        ));
             }
 
             plugin.getDebugger().log(sender.getName() + " checked playtime for " + targetName);
