@@ -12,13 +12,14 @@ Advanced playtime tracking plugin for Minecraft Paper servers with AFK detection
 - ⚡ **High Performance** - Async operations, thread-safe caching, minimal server impact
 - 🎮 **Admin Commands** - Easy management of player playtime data
 - 🔄 **Real-time Updates** - Live session tracking and instant AFK status changes
+- ✨ **Better Format System** - Smart time display that hides zero values
 
 ## Requirements
 
 - **Server Software**: Paper 1.19+ (or compatible)
 - **Java Version**: Java 17+
 - **Database**: MySQL 5.7+ or MariaDB 10.2+
-- **Optional**: PlaceholderAPI (for placeholder functionality)
+- **NEEDED**: PlaceholderAPI (for placeholder functionality)
 
 ## Installation
 
@@ -59,6 +60,38 @@ afk:
     afk: "AFK"          # Text shown when player is AFK
     not_afk: ""         # Text shown when player is active
 ```
+
+### Better Format Configuration
+
+The better format system provides smart playtime display that only shows non-zero values for cleaner output.
+
+```yaml
+playtime_better_format:
+  days:
+    enabled: true    # Show days when > 0
+    suffix: "d"      # Suffix for days
+  hours:
+    enabled: true    # Show hours when > 0
+    suffix: "h"      # Suffix for hours
+  minutes:
+    enabled: true    # Show minutes when > 0
+    suffix: "m"      # Suffix for minutes
+  seconds:
+    enabled: false   # Don't show seconds (recommended)
+    suffix: "s"      # Suffix for seconds
+```
+
+**Examples:**
+- Player with `1d 5h 30m 0s` → displays as `1d 5h 30m`
+- Player with `0d 0h 20m 0s` → displays as `20m` (skips zeros)
+- Player with `0d 2h 0m 0s` → displays as `2h` (skips zeros)
+- Player with `0d 0h 0m 0s` → displays as `0m` (fallback)
+
+**Benefits:**
+- ✅ Cleaner display - no "0d 0h 1m" clutter
+- ✅ Configurable units - disable seconds for simpler output
+- ✅ Custom suffixes - use any language or symbols
+- ✅ Smart fallback - always shows something meaningful
 
 ## Commands
 
@@ -103,6 +136,12 @@ afk:
 | `%hodinovac_total_seconds_raw%` | Total playtime in seconds (raw number) |
 | `%hodinovac_total%` | Formatted total playtime (short format) |
 | `%hodinovac_total_long%` | Formatted total playtime (long format) |
+
+### Better Format Placeholders
+| Placeholder | Description |
+|-------------|-------------|
+| `%hodinovac_total_better%` | Smart formatted total playtime (only non-zero values) |
+| `%hodinovac_session_better%` | Smart formatted session playtime (only non-zero values) |
 
 ### Session Playtime
 | Placeholder | Description |
@@ -170,16 +209,16 @@ long sessionSeconds = api.getSessionPlaytime(playerUUID);
 ```java
 // Get playtime asynchronously (recommended for offline players)
 api.getPlaytimeAsync(playerUUID).thenAccept(playtime -> {
-    // Handle the result
-    System.out.println("Player playtime: " + playtime + " seconds");
+        // Handle the result
+        System.out.println("Player playtime: " + playtime + " seconds");
 });
 
 // Check if player has data in database
-api.hasPlaytimeData(playerUUID).thenAccept(hasData -> {
-    if (hasData) {
+        api.hasPlaytimeData(playerUUID).thenAccept(hasData -> {
+        if (hasData) {
         // Player exists in database
-    }
-});
+        }
+        });
 ```
 
 ### Modifying Playtime
@@ -230,7 +269,7 @@ Listen for AFK status changes:
 public void onAfkStatusChange(PlayerAfkStatusChangeEvent event) {
     UUID playerUUID = event.getPlayerUUID();
     boolean isAfk = event.isAfk();
-    
+
     if (event.wentAfk()) {
         // Player went AFK
         Player player = event.getPlayer();
@@ -253,20 +292,10 @@ public void onAfkStatusChange(PlayerAfkStatusChangeEvent event) {
 <dependency>
     <groupId>me.itzstanleex</groupId>
     <artifactId>hodinovac</artifactId>
-    <version>1.0.0</version>
+    <version>v1.1</version>
     <scope>provided</scope>
 </dependency>
 ```
-
-## Changelog
-
-### v1.0.0
-- Initial release
-- Basic playtime tracking with AFK detection
-- MySQL database integration
-- PlaceholderAPI support
-- Comprehensive developer API
-- Admin commands for playtime management
 
 ---
 
