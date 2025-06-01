@@ -1,0 +1,6 @@
+name: Hodinovac
+version: '1.0-SNAPSHOT'
+main: me.itzstanleex.hodinovac.Hodinovac
+api-version: '1.21'
+description: Advanced playtime tracking plugin with AFK detection and MySQL storage
+softdepend: [PlaceholderAPI]

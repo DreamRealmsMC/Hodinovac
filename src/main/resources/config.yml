@@ -1,0 +1,108 @@
+# Hodinovac Plugin Configuration
+# Advanced playtime tracking with AFK detection
+config-version: 1
+
+# MySQL Database Configuration
+mysql:
+  # Database connection settings
+  host: "localhost"
+  port: 3306
+  database: "hodinovac"
+  user: "root"
+  password: ""
+
+  # Connection pool settings (advanced)
+  pool:
+    maximum-pool-size: 10
+    minimum-idle: 2
+    connection-timeout: 30000
+    idle-timeout: 600000
+    max-lifetime: 1800000
+
+# Playtime Display Formats
+# Available placeholders:
+# %playtime_total_days% - total full days played
+# %playtime_total_hours% - hours remainder after days
+# %playtime_total_minutes% - minutes remainder after hours
+# %playtime_total_seconds% - seconds remainder after minutes
+# %playtime_total_seconds_raw% - total playtime in seconds (raw number)
+
+playtime_format_short: "%playtime_total_hours%h %playtime_total_minutes%m"
+playtime_format_long: "%playtime_total_days%d %playtime_total_hours%h %playtime_total_minutes%m %playtime_total_seconds%s"
+
+# AFK (Away From Keyboard) Configuration
+afk:
+  # Time in seconds before a player is considered AFK
+  # Player must not move for this duration to be marked AFK
+  timeout_seconds: 300  # 5 minutes
+
+  # Format strings for AFK status display
+  format:
+    afk: "AFK"
+    not_afk: ""
+
+# Cache and Performance Settings
+cache:
+  # How often to sync cached data to database (in seconds)
+  sync_interval: 60  # 1 minute
+
+  # How often to update playtime for active players (in seconds)
+  # This affects precision - lower values = more precise but more CPU usage
+  update_interval: 1  # 1 second
+
+# PlaceholderAPI Integration
+placeholders:
+  # Whether to register PlaceholderAPI placeholders
+  enabled: true
+
+  # Placeholder prefix (all placeholders will start with this)
+  prefix: "hodinovac"
+
+# Debug and Logging
+debug: true
+
+# Plugin Messages (supports MiniMessage format)
+messages:
+  prefix: "<gradient:#00ff87:#60efff>[Hodinovac]</gradient> "
+
+  playtime:
+    own: "<green>⏰ Your playtime: <bold>{playtime}</bold></green>"
+    other: "<green>⏰ {player}'s playtime: <bold>{playtime}</bold></green>"
+    session: "<aqua>📊 Session: {session} | Status: {status}</aqua>"
+    added: "<green>✓ Added {time} to {player}'s playtime.</green>"
+    removed: "<green>✓ Removed {time} from {player}'s playtime.</green>"
+
+  afk:
+    went_afk: "<yellow>{player} is now AFK</yellow>"
+    returned: "<green>{player} is no longer AFK</green>"
+
+  errors:
+    player_not_found: "<red>✗ Player '{player}' not found.</red>"
+    invalid_time: "<red>✗ Invalid time format. Use formats like: 1d, 2h, 30m, 1h30m</red>"
+    no_permission: "<red>✗ You don't have permission to do that.</red>"
+    console_player_required: "<red>✗ Console must specify a player name.</red>"
+    operation_failed: "<red>✗ Operation failed. Please try again.</red>"
+
+  reload:
+    success: "<green>✓ Configuration reloaded successfully!</green>"
+    failed: "<red>✗ Failed to reload configuration. Check console for errors.</red>"
+
+# Advanced Settings (don't change unless you know what you're doing)
+advanced:
+  # Database table name
+  table_name: "hodinovac_playtime"
+
+  # Thread pool size for async operations
+  thread_pool_size: 3
+
+  # Maximum number of players to process in batch operations
+  batch_size: 100
+
+  # Enable/disable automatic database schema updates
+  auto_update_schema: true
+
+  # Cache cleanup interval (remove offline players from cache)
+  cache_cleanup_interval: 300  # 5 minutes
+
+  # Maximum time to wait for database operations during shutdown
+  shutdown_timeout: 10  # seconds
