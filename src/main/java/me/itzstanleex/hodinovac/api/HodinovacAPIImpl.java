@@ -16,7 +16,7 @@ import java.util.concurrent.CompletableFuture;
  * delegating to the appropriate plugin components while ensuring
  * thread safety and proper error handling.
  *
- * @author ItzStanleyX
+ * @author ItzStanleex
  * @version 1.0.0
  * @since 1.0.0
  */

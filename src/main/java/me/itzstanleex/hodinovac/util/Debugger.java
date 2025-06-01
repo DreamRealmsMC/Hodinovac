@@ -23,7 +23,7 @@ import java.util.logging.Level;
  * - Memory-efficient message queuing
  * - Multiple log levels support
  *
- * @author ItzStanleyX
+ * @author ItzStanleex
  * @version 1.0.0
  * @since 1.0.0
  */

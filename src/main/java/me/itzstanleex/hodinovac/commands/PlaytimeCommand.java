@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
  *
  * All messages are now configurable through config.yml and support MiniMessage formatting.
  *
- * @author ItzStanleyX
+ * @author ItzStanleex
  * @version 1.0.0
  * @since 1.0.0
  */

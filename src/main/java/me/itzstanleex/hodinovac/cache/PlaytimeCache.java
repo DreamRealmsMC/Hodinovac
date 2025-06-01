@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * with periodic synchronization to the database. Handles session tracking
  * and provides thread-safe operations for all playtime modifications.
  *
- * @author ItzStanleyX
+ * @author ItzStanleex
  * @version 1.0.0
  */
 public class PlaytimeCache {

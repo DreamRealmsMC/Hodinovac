@@ -32,7 +32,7 @@ import java.util.UUID;
  * }
  * </pre>
  *
- * @author ItzStanleyX
+ * @author ItzStanleex
  * @version 1.0.0
  * @since 1.0.0
  */

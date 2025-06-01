@@ -24,7 +24,7 @@ import java.util.concurrent.Executors;
  * This plugin tracks player playtime excluding AFK time, stores data in MySQL database,
  * provides PlaceholderAPI integration, and offers a comprehensive API for other plugins.
  *
- * @author ItzStanleyX
+ * @author ItzStanleex
  * @version 1.0.0
  */
 public final class Hodinovac extends JavaPlugin {

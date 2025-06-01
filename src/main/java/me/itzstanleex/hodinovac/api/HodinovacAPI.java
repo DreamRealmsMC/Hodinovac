@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
  * }
  * </pre>
  *
- * @author ItzStanleyX
+ * @author ItzStanleex
  * @version 1.0.0
  * @since 1.0.0
  */

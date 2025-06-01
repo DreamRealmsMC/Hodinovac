@@ -12,7 +12,7 @@ import java.util.Map;
  * Manages all plugin messages with MiniMessage support and placeholder replacement.
  * All messages are configurable through config.yml and support reload functionality.
  *
- * @author ItzStanleyX
+ * @author ItzStanleex
  * @version 1.0.0
  */
 public class MessageManager {

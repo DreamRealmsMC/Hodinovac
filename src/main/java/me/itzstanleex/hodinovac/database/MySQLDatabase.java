@@ -18,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
  * handles table creation, and provides async methods for all database operations.
  * All database operations run asynchronously to prevent blocking the main server thread.
  *
- * @author ItzStanleyX
+ * @author ItzStanleex
  * @version 1.0.0
  */
 public class MySQLDatabase {

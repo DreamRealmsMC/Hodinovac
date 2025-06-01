@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentMap;
  * Only movement resets AFK status - chat, interactions, and other events do not.
  * Fires PlayerAfkStatusChangeEvent when AFK status changes.
  *
- * @author ItzStanleyX
+ * @author ItzStanleex
  * @version 1.0.0
  */
 public class AfkManager implements Listener {
