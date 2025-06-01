@@ -30,6 +30,20 @@ mysql:
 playtime_format_short: "%playtime_total_hours%h %playtime_total_minutes%m"
 playtime_format_long: "%playtime_total_days%d %playtime_total_hours%h %playtime_total_minutes%m %playtime_total_seconds%s"
 
+playtime_better_format:
+  days:
+    enabled: true    # Show days?
+    suffix: "d"      # Suffix for days
+  hours:
+    enabled: true    # Show hours?  
+    suffix: "h"      # Suffix for hours
+  minutes:
+    enabled: true    # Show minutes?
+    suffix: "m"      # Suffix for minutes
+  seconds:
+    enabled: false   # Show seconds?
+    suffix: "s"      # Suffix for seconds (if enabled)
+
 # AFK (Away From Keyboard) Configuration
 afk:
   # Time in seconds before a player is considered AFK

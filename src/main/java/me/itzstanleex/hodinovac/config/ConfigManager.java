@@ -19,7 +19,7 @@ import java.util.Objects;
  * Handles loading, reloading, and accessing configuration values with type safety
  * and default value fallbacks. Supports automatic config updates and validation.
  *
- * @author ItzStanleyX
+ * @author ItzStanleex
  * @version 1.0.0
  */
 public class ConfigManager {
@@ -289,5 +289,87 @@ public class ConfigManager {
             e.printStackTrace();
             return false;
         }
+    }
+    // Better Format Configuration Methods
+
+    /**
+     * Checks if days are enabled in better format
+     *
+     * @return true if days should be displayed
+     */
+    public boolean isBetterFormatDaysEnabled() {
+        return config.getBoolean("playtime_better_format.days.enabled", true);
+    }
+
+    /**
+     * Gets days suffix for better format
+     *
+     * @return suffix for days
+     */
+    public String getBetterFormatDaysSuffix() {
+        return config.getString("playtime_better_format.days.suffix", "d");
+    }
+
+    /**
+     * Checks if hours are enabled in better format
+     *
+     * @return true if hours should be displayed
+     */
+    public boolean isBetterFormatHoursEnabled() {
+        return config.getBoolean("playtime_better_format.hours.enabled", true);
+    }
+
+    /**
+     * Gets hours suffix for better format
+     *
+     * @return suffix for hours
+     */
+    public String getBetterFormatHoursSuffix() {
+        return config.getString("playtime_better_format.hours.suffix", "h");
+    }
+
+    /**
+     * Checks if minutes are enabled in better format
+     *
+     * @return true if minutes should be displayed
+     */
+    public boolean isBetterFormatMinutesEnabled() {
+        return config.getBoolean("playtime_better_format.minutes.enabled", true);
+    }
+
+    /**
+     * Gets minutes suffix for better format
+     *
+     * @return suffix for minutes
+     */
+    public String getBetterFormatMinutesSuffix() {
+        return config.getString("playtime_better_format.minutes.suffix", "m");
+    }
+
+    /**
+     * Checks if seconds are enabled in better format
+     *
+     * @return true if seconds should be displayed
+     */
+    public boolean isBetterFormatSecondsEnabled() {
+        return config.getBoolean("playtime_better_format.seconds.enabled", false);
+    }
+
+    /**
+     * Gets seconds suffix for better format
+     *
+     * @return suffix for seconds
+     */
+    public String getBetterFormatSecondsSuffix() {
+        return config.getString("playtime_better_format.seconds.suffix", "s");
+    }
+
+    /**
+     * Gets the placeholder prefix from configuration
+     *
+     * @return placeholder prefix
+     */
+    public String getPlaceholderPrefix() {
+        return config.getString("placeholders.prefix", "hodinovac");
     }
 }

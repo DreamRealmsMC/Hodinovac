@@ -12,18 +12,19 @@ import org.jetbrains.annotations.Nullable;
  * PlaceholderAPI integration for Hodinovac plugin.
  *
  * Provides placeholders for playtime data, AFK status, and formatted strings.
- * All placeholders are prefixed with "playtime_" to avoid conflicts.
+ * All placeholders are prefixed with the configured prefix (default: "hodinovac").
  *
  * Available placeholders:
  *
  * Total playtime placeholders:
  * - %hodinovac_total_days% - total full days played (excluding AFK)
  * - %hodinovac_total_hours% - hours remainder after days
- * - %hodinovac_total_minutes% - minutes remainder after hours
+ * - %hodinovac_total_minutes% - minutes remainder after minutes
  * - %hodinovac_total_seconds% - seconds remainder after minutes
  * - %hodinovac_total_seconds_raw% - total playtime in seconds (raw number)
  * - %hodinovac_total% - formatted total playtime (uses short format from config)
  * - %hodinovac_total_long% - formatted total playtime (uses long format from config)
+ * - %hodinovac_total_better% - smart formatted total playtime (only shows non-zero values)
  *
  * Session playtime placeholders:
  * - %hodinovac_session_days% - session full days
@@ -33,11 +34,18 @@ import org.jetbrains.annotations.Nullable;
  * - %hodinovac_session_seconds_raw% - session playtime in seconds (raw number)
  * - %hodinovac_session% - formatted session playtime (uses short format from config)
  * - %hodinovac_session_long% - formatted session playtime (uses long format from config)
+ * - %hodinovac_session_better% - smart formatted session playtime (only shows non-zero values)
  *
  * AFK status placeholders:
  * - %hodinovac_afk_status% - string from config (afk_format.afk if AFK, afk_format.not_afk if not AFK)
  * - %hodinovac_afk_boolean% - boolean true/false representing AFK state
  * - %hodinovac_time_since_move% - time since last move in seconds
+ *
+ * Better format examples:
+ * - Player with 1d 5h 30m will show: "1d 5h 30m" (if all enabled)
+ * - Player with 0d 0h 20m will show: "20m" (skips zero values)
+ * - Player with 0d 2h 0m will show: "2h" (skips zero values)
+ * - Configuration allows enabling/disabling specific units and customizing suffixes
  *
  * @author ItzStanleex
  * @version 1.0.0
@@ -185,6 +193,12 @@ public class PlaceholderHook extends PlaceholderExpansion {
             case "afk_timeout":
                 return String.valueOf(api.getAfkTimeoutSeconds());
 
+            // Better format placeholders
+            case "total_better":
+                return getBetterFormattedPlaytime(player, false);
+            case "session_better":
+                return getBetterFormattedPlaytime(player, true);
+
             default:
                 return null;
         }
@@ -315,5 +329,82 @@ public class PlaceholderHook extends PlaceholderExpansion {
     @Override
     public @Nullable String onPlaceholderRequest(Player player, @NotNull String params) {
         return onRequest(player, params);
+    }
+    /**
+     * Formats playtime using better format configuration
+     * Only shows non-zero values based on configuration
+     *
+     * @param player Target player
+     * @param isSession true for session playtime, false for total playtime
+     * @return Better formatted playtime string
+     */
+    private String getBetterFormattedPlaytime(OfflinePlayer player, boolean isSession) {
+        long totalSeconds = isSession ?
+                api.getSessionPlaytime(player.getUniqueId()) :
+                api.getPlaytime(player.getUniqueId());
+
+        return formatTimeBetter(totalSeconds);
+    }
+
+    /**
+     * Formats time using better format configuration
+     * Shows only non-zero values and enabled components
+     *
+     * @param totalSeconds Total seconds to format
+     * @return Better formatted time string
+     */
+    private String formatTimeBetter(long totalSeconds) {
+        if (totalSeconds <= 0) {
+            return "0" + (plugin.getConfigManager().isBetterFormatMinutesEnabled() ?
+                    plugin.getConfigManager().getBetterFormatMinutesSuffix() : "");
+        }
+
+        long days = totalSeconds / 86400;
+        long hours = (totalSeconds % 86400) / 3600;
+        long minutes = (totalSeconds % 3600) / 60;
+        long seconds = totalSeconds % 60;
+
+        StringBuilder result = new StringBuilder();
+
+        // Add days if enabled and greater than 0
+        if (plugin.getConfigManager().isBetterFormatDaysEnabled() && days > 0) {
+            result.append(days).append(plugin.getConfigManager().getBetterFormatDaysSuffix());
+        }
+
+        // Add hours if enabled and greater than 0
+        if (plugin.getConfigManager().isBetterFormatHoursEnabled() && hours > 0) {
+            if (result.length() > 0) result.append(" ");
+            result.append(hours).append(plugin.getConfigManager().getBetterFormatHoursSuffix());
+        }
+
+        // Add minutes if enabled and greater than 0
+        if (plugin.getConfigManager().isBetterFormatMinutesEnabled() && minutes > 0) {
+            if (result.length() > 0) result.append(" ");
+            result.append(minutes).append(plugin.getConfigManager().getBetterFormatMinutesSuffix());
+        }
+
+        // Add seconds if enabled and greater than 0
+        if (plugin.getConfigManager().isBetterFormatSecondsEnabled() && seconds > 0) {
+            if (result.length() > 0) result.append(" ");
+            result.append(seconds).append(plugin.getConfigManager().getBetterFormatSecondsSuffix());
+        }
+
+        // If result is empty (all values are 0 or disabled), show at least something
+        if (result.length() == 0) {
+            // Show the smallest enabled unit with 0
+            if (plugin.getConfigManager().isBetterFormatSecondsEnabled()) {
+                result.append("0").append(plugin.getConfigManager().getBetterFormatSecondsSuffix());
+            } else if (plugin.getConfigManager().isBetterFormatMinutesEnabled()) {
+                result.append("0").append(plugin.getConfigManager().getBetterFormatMinutesSuffix());
+            } else if (plugin.getConfigManager().isBetterFormatHoursEnabled()) {
+                result.append("0").append(plugin.getConfigManager().getBetterFormatHoursSuffix());
+            } else if (plugin.getConfigManager().isBetterFormatDaysEnabled()) {
+                result.append("0").append(plugin.getConfigManager().getBetterFormatDaysSuffix());
+            } else {
+                result.append("0m"); // fallback
+            }
+        }
+
+        return result.toString();
     }
 }
