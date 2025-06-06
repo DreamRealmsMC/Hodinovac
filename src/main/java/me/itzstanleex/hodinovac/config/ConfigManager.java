@@ -252,7 +252,7 @@ public class ConfigManager {
      * @return AFK timeout in seconds
      */
     public long getAfkTimeoutSeconds() {
-        return config.getLong("afk_timeout_seconds", 300L); // 5 minutes default
+        return config.getLong("afk.timeout_seconds", 300L); // 5 minutes default
     }
 
     /**
