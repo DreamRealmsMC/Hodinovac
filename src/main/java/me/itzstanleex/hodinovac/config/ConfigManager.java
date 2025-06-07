@@ -45,7 +45,6 @@ public class ConfigManager {
      */
     public boolean loadConfig() {
         try {
-            plugin.getDebugger().log("Loading configuration file...");
 
             this.config = YamlDocument.create(
                     new File(plugin.getDataFolder(), "config.yml"),
@@ -58,20 +57,16 @@ public class ConfigManager {
 
             // Validate configuration
             if (!validateConfig()) {
-                plugin.getLogger().severe("Configuration validation failed!");
                 return false;
             }
 
-            plugin.getDebugger().log("Configuration loaded successfully");
             return true;
 
         } catch (IOException e) {
-            plugin.getLogger().severe("Failed to load configuration: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
-
     /**
      * Reloads the configuration file
      *
@@ -241,7 +236,9 @@ public class ConfigManager {
      * @return true if debug mode is enabled, false otherwise
      */
     public boolean isDebugEnabled() {
-        return config.getBoolean("debug", false);
+        boolean debugEnabled = config.getBoolean("debug", false);
+        System.out.println(debugEnabled);
+        return debugEnabled;
     }
 
     // AFK Configuration

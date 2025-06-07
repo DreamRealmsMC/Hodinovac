@@ -6,7 +6,6 @@ import lombok.Getter;
 import me.itzstanleex.hodinovac.Hodinovac;
 
 import java.sql.*;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -84,63 +83,90 @@ public class MySQLDatabase {
     }
 
     /**
-     * Initializes the database connection and creates tables
+     * Synchronously initializes the database connection pool and creates tables
+     *
+     * @throws SQLException if database initialization fails
+     */
+    public void initialize() throws SQLException {
+        plugin.getDebugger().log("Initializing MySQL database connection...");
+
+        // Setup HikariCP connection pool
+        HikariConfig config = createHikariConfig();
+        this.dataSource = new HikariDataSource(config);
+
+        // Test connection and create tables
+        testConnectionAndCreateTables();
+
+        plugin.getDebugger().log("MySQL database initialized successfully");
+    }
+
+    /**
+     * Asynchronously initializes the database connection and creates tables
      *
      * @return CompletableFuture<Boolean> true if initialization was successful
      */
-    public CompletableFuture<Boolean> initialize() {
+    public CompletableFuture<Boolean> initializeAsync() {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                plugin.getDebugger().log("Initializing MySQL database connection...");
-
-                // Setup HikariCP connection pool
-                HikariConfig config = new HikariConfig();
-                config.setJdbcUrl(plugin.getConfigManager().getMySQLUrl());
-                config.setUsername(plugin.getConfigManager().getMySQLUser());
-                config.setPassword(plugin.getConfigManager().getMySQLPassword());
-
-                // Connection pool settings
-                config.setMaximumPoolSize(10);
-                config.setMinimumIdle(2);
-                config.setConnectionTimeout(30000);
-                config.setIdleTimeout(600000);
-                config.setMaxLifetime(1800000);
-                config.setLeakDetectionThreshold(60000);
-
-                // Connection properties for better performance
-                config.addDataSourceProperty("cachePrepStmts", "true");
-                config.addDataSourceProperty("prepStmtCacheSize", "250");
-                config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
-                config.addDataSourceProperty("useServerPrepStmts", "true");
-                config.addDataSourceProperty("useLocalSessionState", "true");
-                config.addDataSourceProperty("rewriteBatchedStatements", "true");
-                config.addDataSourceProperty("cacheResultSetMetadata", "true");
-                config.addDataSourceProperty("cacheServerConfiguration", "true");
-                config.addDataSourceProperty("elideSetAutoCommits", "true");
-                config.addDataSourceProperty("maintainTimeStats", "false");
-
-                this.dataSource = new HikariDataSource(config);
-
-                // Test connection and create tables
-                try (Connection connection = dataSource.getConnection()) {
-                    plugin.getDebugger().log("Database connection established successfully");
-
-                    // Create tables if they don't exist
-                    try (PreparedStatement statement = connection.prepareStatement(CREATE_TABLE_QUERY)) {
-                        statement.executeUpdate();
-                        plugin.getDebugger().log("Database tables created/verified successfully");
-                    }
-                }
-
-                plugin.getDebugger().log("MySQL database initialized successfully");
+                initialize();
                 return true;
-
             } catch (SQLException e) {
                 plugin.getLogger().severe("Failed to initialize MySQL database: " + e.getMessage());
                 e.printStackTrace();
                 return false;
             }
         }, plugin.getExecutorService());
+    }
+
+    /**
+     * Creates and configures HikariCP configuration
+     *
+     * @return configured HikariConfig instance
+     */
+    private HikariConfig createHikariConfig() {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(plugin.getConfigManager().getMySQLUrl());
+        config.setUsername(plugin.getConfigManager().getMySQLUser());
+        config.setPassword(plugin.getConfigManager().getMySQLPassword());
+
+        // Connection pool settings
+        config.setMaximumPoolSize(10);
+        config.setMinimumIdle(2);
+        config.setConnectionTimeout(30000);
+        config.setIdleTimeout(600000);
+        config.setMaxLifetime(1800000);
+        config.setLeakDetectionThreshold(60000);
+
+        // Connection properties for better performance
+        config.addDataSourceProperty("cachePrepStmts", "true");
+        config.addDataSourceProperty("prepStmtCacheSize", "250");
+        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+        config.addDataSourceProperty("useServerPrepStmts", "true");
+        config.addDataSourceProperty("useLocalSessionState", "true");
+        config.addDataSourceProperty("rewriteBatchedStatements", "true");
+        config.addDataSourceProperty("cacheResultSetMetadata", "true");
+        config.addDataSourceProperty("cacheServerConfiguration", "true");
+        config.addDataSourceProperty("elideSetAutoCommits", "true");
+        config.addDataSourceProperty("maintainTimeStats", "false");
+
+        return config;
+    }
+
+    /**
+     * Tests database connection and creates necessary tables
+     *
+     * @throws SQLException if connection test or table creation fails
+     */
+    private void testConnectionAndCreateTables() throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            plugin.getDebugger().log("Database connection established successfully");
+
+            // Create tables if they don't exist
+            try (PreparedStatement statement = connection.prepareStatement(CREATE_TABLE_QUERY)) {
+                statement.executeUpdate();
+                plugin.getDebugger().log("Database tables created/verified successfully");
+            }
+        }
     }
 
     /**

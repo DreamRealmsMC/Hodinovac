@@ -3,6 +3,7 @@ package me.itzstanleex.hodinovac.afk;
 import me.itzstanleex.hodinovac.Hodinovac;
 import me.itzstanleex.hodinovac.api.events.PlayerAfkStatusChangeEvent;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -135,10 +136,15 @@ public class AfkManager implements Listener {
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent event) {
-        // Only track actual movement, not just looking around
-        if (event.getFrom().getBlockX() == event.getTo().getBlockX() &&
-                event.getFrom().getBlockY() == event.getTo().getBlockY() &&
-                event.getFrom().getBlockZ() == event.getTo().getBlockZ()) {
+        Location from = event.getFrom();
+        Location to = event.getTo();
+
+        if (to == null) return;
+
+        // Only track actual movement, not just looking around or being pushed
+        if (from.getBlockX() == to.getBlockX() &&
+                from.getBlockY() == to.getBlockY() &&
+                from.getBlockZ() == to.getBlockZ()) {
             return;
         }
 

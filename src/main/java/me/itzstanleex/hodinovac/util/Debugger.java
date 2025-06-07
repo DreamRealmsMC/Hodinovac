@@ -32,7 +32,6 @@ public class Debugger {
     private final Hodinovac plugin;
     private final AtomicBoolean debugEnabled;
     private final ConcurrentLinkedQueue<LogEntry> logQueue;
-    private final DateTimeFormatter timeFormatter;
 
     // Performance tracking
     private volatile long lastPerformanceLog = 0;
@@ -54,19 +53,15 @@ public class Debugger {
         this.plugin = plugin;
         this.debugEnabled = new AtomicBoolean(false);
         this.logQueue = new ConcurrentLinkedQueue<>();
-        this.timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
 
-        // Initialize debug state
-        updateDebugState();
     }
 
     /**
      * Updates debug state from configuration
      */
-    public void updateDebugState() {
-        if (plugin.getConfigManager() != null) {
-            debugEnabled.set(plugin.getConfigManager().isDebugEnabled());
-        }
+    public void updateDebugState(Boolean DebugEnabled) {
+        debugEnabled.set(DebugEnabled);
+
     }
 
     /**
@@ -90,13 +85,11 @@ public class Debugger {
         }
 
         try {
-            String timestamp = LocalDateTime.now().format(timeFormatter);
-            String levelString = getLevelString(level);
-            String formattedMessage = String.format("[%s] [%s] %s", timestamp, levelString, message);
+            String formattedMessage = String.format(message);
 
             // Log immediately for important messages
             if (level >= LEVEL_WARN) {
-                plugin.getLogger().info("[DEBUG] " + formattedMessage);
+                plugin.getLogger().info(formattedMessage);
             } else {
                 // Queue less important messages
                 logQueue.offer(new LogEntry(System.currentTimeMillis(), level, formattedMessage));
