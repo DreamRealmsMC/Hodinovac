@@ -236,9 +236,7 @@ public class ConfigManager {
      * @return true if debug mode is enabled, false otherwise
      */
     public boolean isDebugEnabled() {
-        boolean debugEnabled = config.getBoolean("debug", false);
-        System.out.println(debugEnabled);
-        return debugEnabled;
+        return config.getBoolean("debug", false);
     }
 
     // AFK Configuration
